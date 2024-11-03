@@ -19,7 +19,7 @@ app = Flask(__name__)
 
 # Configure CORS to allow cross-origin requests
 CORS(app)
-CORS(app, resources={r"/": {"origins": "*"}})  # Adjust the origins as needed
+CORS(app, resources={r"/*": {"origins": "*"}})  # Adjust the origins as needed
 
 # Configure Swagger
 swagger_config = {
