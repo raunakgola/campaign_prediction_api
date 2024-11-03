@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flasgger import Swagger
+from flask_cors import CORS
 import joblib
 import numpy as np
 import os
@@ -16,14 +17,18 @@ import requests
 
 app = Flask(__name__)
 
+# Configure CORS to allow cross-origin requests
+CORS(app)
+CORS(app, resources={r"/": {"origins": "*"}})  # Adjust the origins as needed
+
 # Configure Swagger
 swagger_config = {
-    "definitions": {"name":"Sparta 300"},
+    "definitions": {"name": "Sparta 300"},
     'swagger': '2.0',
     'info': {
         'version': '0.0.1',
         'title': 'Campaign Prediction API',
-        'description': """This API provides the prediction API which you can predict the Raised Amount""",
+        'description': "This API provides the prediction API which you can predict the Raised Amount",
         'termsOfService': '/tos'
     },
     'specs': [
@@ -36,7 +41,7 @@ swagger_config = {
     ],
     'headers': [],  # Set headers to an empty list to avoid TypeError
 }
-swagger = Swagger(app,config=swagger_config)
+swagger = Swagger(app, config=swagger_config)
 
 # Use an application context to access current_app
 with app.app_context():
@@ -44,6 +49,7 @@ with app.app_context():
 
 # Set up rate limiting (100 requests per minute per IP)
 limiter = Limiter(get_remote_address, app=app, default_limits=["100 per minute"])
+
 
 # Configure Logging
 def setup_logging():
@@ -53,11 +59,13 @@ def setup_logging():
     handler.setFormatter(formatter)
     logging.getLogger().addHandler(handler)
 
+
 setup_logging()
 logging.info("Logging is set up.")
 
 # Load pre-trained models
 model1 = joblib.load('Campaign_prediction.joblib')
+
 
 # apidocs
 @app.route('/custom_swagger', methods=['GET'])
@@ -67,6 +75,7 @@ def swagger_json():
     print(api_spec)  # Debug print
     print("swagger.json endpoint was hit")
     return api_spec
+
 
 # Endpoint for delay prediction
 @app.route('/campaign_predict', methods=['POST'])
@@ -96,14 +105,16 @@ async def prediction1():
         prediction = model1.predict([features])[0]
 
         feature_details = {
-            'Currency': {0:'AUD', 1:'CAD', 2:'EUR', 3:'GBP', 4:'USD'}[int(features[6])],
+            'Currency': {0: 'AUD', 1: 'CAD', 2: 'EUR', 3: 'GBP', 4: 'USD'}[int(features[6])],
         }
-        
+
         logging.info("Processed delay prediction request.")
-        return jsonify({'prediction': "~" + str(round(prediction, 2)) + f" {feature_details['Currency']} predicted Raised Amount of this Campaign"}), 200
+        return jsonify({'prediction': "~" + str(
+            round(prediction, 2)) + f" {feature_details['Currency']} predicted Raised Amount of this Campaign"}), 200
     except Exception as e:
         logging.error(f"Error in delay prediction: {e}")
         return jsonify({'error': str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)
