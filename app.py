@@ -119,8 +119,14 @@ async def prediction1():
 
 
         logging.info("Processed Campaign prediction request.")
-        return jsonify({'prediction': "The campaign was " + f"{issuccessfull}." +" The total amount raised in this " +f"{feature_details["Category"]}" +" campaign after "+f"{feature_details["Days"]}"+" days is "+"~" + str(round(prediction, 2)) + f" {feature_details['Currency']}."}), 200
-    except Exception as e:
+        return jsonify({
+                        'prediction': (
+                        f"The campaign was {issuccessfull}. The total amount raised in this "
+                        f"{feature_details['Category']} campaign after {feature_details['Days']} days is ~"
+                        f"{round(prediction, 2)} {feature_details['Currency']}."
+                        )
+                    }), 200
+        except Exception as e:
         logging.error(f"Error in delay prediction: {e}")
         return jsonify({'error': str(e)}), 500
 
