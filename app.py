@@ -105,12 +105,21 @@ async def prediction1():
         prediction = model1.predict([features])[0]
 
         feature_details = {
-            'Currency': {0: 'AUD', 1: 'CAD', 2: 'EUR', 3: 'GBP', 4: 'USD'}[int(features[6])],
+            'GoalAmount': int(features[0]),
+            'Days': int(features[1]),
+            'Category': {0:'Art', 1:'Film', 2:'Games', 3:'Music', 4:'Tech'}[int(features[3])],
+            'Currency': {0: 'AUD', 1: 'CAD', 2: 'EUR', 3: 'GBP', 4: 'USD'}[int(features[6])]
         }
 
-        logging.info("Processed delay prediction request.")
-        return jsonify({'prediction': "~" + str(
-            round(prediction, 2)) + f" {feature_details['Currency']} predicted Raised Amount of this Campaign"}), 200
+        if (feature_details["GoalAmount"] < int(prediction)):
+            issuccessfull = "a tremendous success"
+        else:
+            issuccessfull = "unfortunately not successful"
+
+
+
+        logging.info("Processed Campaign prediction request.")
+        return jsonify({'prediction': "The campaign was " + f"{issuccessfull}." +" The total amount raised in this " +f"{feature_details["Category"]}" +" campaign after "+f"{feature_details["Days"]}"+" days is "+"~" + str(round(prediction, 2)) + f" {feature_details['Currency']}."}), 200
     except Exception as e:
         logging.error(f"Error in delay prediction: {e}")
         return jsonify({'error': str(e)}), 500
